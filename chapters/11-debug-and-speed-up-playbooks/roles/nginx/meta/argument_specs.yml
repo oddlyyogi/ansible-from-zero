@@ -1,0 +1,9 @@
+---
+argument_specs:
+  main:
+    short_description: Install and configure nginx
+    options:
+      nginx_worker_connections:
+        type: int
+        default: 2048
+        description: Connections per worker process.

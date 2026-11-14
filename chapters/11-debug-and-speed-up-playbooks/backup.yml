@@ -1,0 +1,23 @@
+---
+- name: A long job in the background
+  hosts: db1
+  become: true
+  become_user: postgres
+  gather_facts: false
+  tasks:
+    - name: Start the database backup
+      ansible.builtin.shell: sleep 15 && pg_dumpall > /var/lib/postgresql/all.sql
+      async: 120
+      poll: 0
+      register: backup
+      changed_when: true
+    - name: Meanwhile, check the database is up
+      community.postgresql.postgresql_ping:
+        login_db: appdb
+    - name: Wait for the backup to finish
+      ansible.builtin.async_status:
+        jid: "{{ backup.ansible_job_id }}"
+      register: job
+      until: job.finished
+      retries: 30
+      delay: 2

@@ -1,0 +1,6 @@
+---
+- name: Set up the load balancers
+  hosts: loadbalancers
+  become: true
+  roles:
+    - lb

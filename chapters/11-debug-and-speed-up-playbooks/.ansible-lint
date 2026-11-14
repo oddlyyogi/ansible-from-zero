@@ -1,0 +1,6 @@
+---
+profile: production
+exclude_paths:
+  - galaxy_roles/
+warn_list:
+  - var-naming[no-role-prefix]

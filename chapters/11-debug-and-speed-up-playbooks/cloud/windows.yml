@@ -1,0 +1,36 @@
+---
+- name: Web server on Windows
+  hosts: os_windows
+  tasks:
+    - name: Install IIS
+      ansible.windows.win_feature:
+        name: Web-Server
+        include_management_tools: true
+        state: present
+      register: iis
+    - name: Restart if the feature needs it
+      ansible.windows.win_reboot:
+      when: iis.reboot_required
+    - name: Put a page in place
+      ansible.windows.win_copy:
+        dest: C:\inetpub\wwwroot\index.html
+        content: "Hello from {{ inventory_hostname }}, running {{ ansible_facts['os_name'] }}\n"
+    - name: Keep the web service running
+      ansible.windows.win_service:
+        name: W3SVC
+        start_mode: auto
+        state: started
+
+- name: Check it from the control node
+  hosts: os_windows
+  gather_facts: false
+  tasks:
+    - name: Ask for the page over the internet
+      ansible.builtin.uri:
+        url: "http://{{ ansible_host }}/"
+        return_content: true
+      delegate_to: localhost
+      register: page
+    - name: Show the answer
+      ansible.builtin.debug:
+        msg: "{{ page.content | trim }}"

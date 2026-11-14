@@ -1,0 +1,24 @@
+---
+- name: Check disk space before a deploy
+  hosts: webservers
+  gather_facts: false
+  vars:
+    disk_limit_pct: 90
+  tasks:
+    - name: Measure the used space on /
+      ansible.builtin.command: df --output=pcent /
+      changed_when: false
+      register:
+        used_pct: _task.result.stdout_lines | last | trim | replace('%', '') | int
+
+    - name: Show the measurement
+      ansible.builtin.debug:
+        var: used_pct
+        verbosity: 1
+
+    - name: Check the used space
+      ansible.builtin.assert:
+        that: used_pct < disk_limit_pct
+        fail_msg: "/ is {{ used_pct }} percent full, over {{ disk_limit_pct }}"
+        success_msg: "/ is {{ used_pct }} percent full"
+      debugger: on_failed

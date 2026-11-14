@@ -1,0 +1,34 @@
+---
+- name: Install PowerShell
+  hosts: os_linux
+  become: true
+  vars:
+    pwsh_version: 7.6.10
+    pwsh_release: https://github.com/PowerShell/PowerShell/releases/download
+    pwsh_file: "powershell-{{ pwsh_version }}-linux-x64.tar.gz"
+  tasks:
+    - name: Install what PowerShell needs
+      ansible.builtin.apt:
+        name: [libicu76, ca-certificates]
+        state: present
+        update_cache: true
+    - name: Create the PowerShell folder
+      ansible.builtin.file:
+        path: /opt/microsoft/powershell/7
+        state: directory
+        mode: "0755"
+    - name: Unpack PowerShell
+      ansible.builtin.unarchive:
+        src: "{{ pwsh_release }}/v{{ pwsh_version }}/{{ pwsh_file }}"
+        dest: /opt/microsoft/powershell/7
+        remote_src: true
+        creates: /opt/microsoft/powershell/7/pwsh
+    - name: Make pwsh executable
+      ansible.builtin.file:
+        path: /opt/microsoft/powershell/7/pwsh
+        mode: "0755"
+    - name: Link pwsh into the path
+      ansible.builtin.file:
+        src: /opt/microsoft/powershell/7/pwsh
+        dest: /usr/bin/pwsh
+        state: link
