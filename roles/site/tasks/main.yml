@@ -1,4 +1,4 @@
-#SPDX-License-Identifier: MIT-0
+# SPDX-License-Identifier: MIT-0
 ---
 - name: Look for an old log rotation file
   ansible.builtin.command: cat /etc/logrotate.d/oldsite
@@ -13,7 +13,7 @@
   when: old_rotation.rc == 0
 - name: Count the web servers
   ansible.builtin.set_fact:
-    web_count: "{{ groups['webservers'] | length }}"
+    web_count: "{{ groups['webservers'] | length }}" # noqa: var-naming[no-role-prefix]
   tags: always
 - name: Create the local facts folder
   ansible.builtin.file:

@@ -7,3 +7,5 @@ lab/known_hosts
 *-artifact-*.json
 .DS_Store
 galaxy_roles/
+.facts_cache/
+.ansible/

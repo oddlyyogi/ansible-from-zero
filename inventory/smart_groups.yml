@@ -1,3 +1,4 @@
+---
 plugin: ansible.builtin.constructed
 strict: false
 use_vars_plugins: true

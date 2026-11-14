@@ -1,3 +1,4 @@
+---
 x-node: &node
   build: lab
   privileged: true

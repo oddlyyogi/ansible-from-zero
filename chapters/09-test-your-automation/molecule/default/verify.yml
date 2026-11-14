@@ -1,0 +1,26 @@
+---
+# Purpose: assert that the instance really ended up in the expected state.
+# Molecule calls this playbook with `molecule verify`.
+- name: Verify
+  hosts: instance
+  become: true
+  gather_facts: false # Quicker, if you do not need facts
+  tasks:
+    - name: Read the full nginx configuration
+      ansible.builtin.command: nginx -T
+      register: nginx_conf
+      changed_when: false
+    - name: Check the worker connections
+      ansible.builtin.assert:
+        that: "'worker_connections 2048;' in nginx_conf.stdout"
+        fail_msg: worker_connections is not 2048
+    - name: Ask nginx for the test page
+      ansible.builtin.uri:
+        url: http://localhost/
+        return_content: true
+      register: page
+    - name: Check the page and the security header
+      ansible.builtin.assert:
+        that:
+          - "'test page' in page.content"
+          - page.x_frame_options == 'DENY'

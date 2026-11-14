@@ -1,2 +1,3 @@
+---
 ansible_port: 2224
 motd: Database server, ask before restarting

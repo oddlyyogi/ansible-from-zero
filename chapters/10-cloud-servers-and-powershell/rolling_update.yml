@@ -1,0 +1,40 @@
+---
+- name: Roll out a new app version
+  hosts: webservers
+  become: true
+  serial: 1
+  max_fail_percentage: 0
+  pre_tasks:
+    - name: Take this server out of the load balancer
+      ansible.builtin.lineinfile:
+        path: /etc/nginx/sites-available/default
+        regexp: "^\\s*server {{ inventory_hostname }}:80"
+        line: "    server {{ inventory_hostname }}:80 down;"
+      delegate_to: "{{ groups['loadbalancers'][0] }}"
+    - name: Reload the load balancer
+      ansible.builtin.service:
+        name: nginx
+        state: reloaded
+      delegate_to: "{{ groups['loadbalancers'][0] }}"
+  roles:
+    - app
+  post_tasks:
+    - name: Wait for the new version
+      ansible.builtin.uri:
+        url: http://localhost/visits
+        return_content: true
+      register: answer
+      until: app_version in answer.content
+      retries: 10
+      delay: 1
+    - name: Put this server back
+      ansible.builtin.lineinfile:
+        path: /etc/nginx/sites-available/default
+        regexp: "^\\s*server {{ inventory_hostname }}:80"
+        line: "    server {{ inventory_hostname }}:80;"
+      delegate_to: "{{ groups['loadbalancers'][0] }}"
+    - name: Reload the load balancer again
+      ansible.builtin.service:
+        name: nginx
+        state: reloaded
+      delegate_to: "{{ groups['loadbalancers'][0] }}"

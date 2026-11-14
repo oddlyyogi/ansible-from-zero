@@ -1,4 +1,4 @@
-#SPDX-License-Identifier: MIT-0
+# SPDX-License-Identifier: MIT-0
 ---
 - name: Install nginx
   ansible.builtin.apt:
@@ -17,7 +17,7 @@
   ansible.builtin.lineinfile:
     path: /etc/nginx/nginx.conf
     backup: true
-    regexp: '^\s*worker_connections'
+    regexp: "^\\s*worker_connections"
     line: "\tworker_connections {{ nginx_worker_connections }};"
   notify: web config changed
 - name: Change the site config safely

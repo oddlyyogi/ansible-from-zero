@@ -1,0 +1,15 @@
+---
+- name: Prepare
+  hosts: all
+  become: true
+  tasks:
+    - name: Create the web root
+      ansible.builtin.file:
+        path: /var/www/html
+        state: directory
+        mode: "0755"
+    - name: Put a test page in place
+      ansible.builtin.copy:
+        dest: /var/www/html/index.html
+        content: "test page\n"
+        mode: "0644"

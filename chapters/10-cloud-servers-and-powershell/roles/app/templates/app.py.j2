@@ -1,0 +1,21 @@
+import os, socket
+from http.server import BaseHTTPRequestHandler, HTTPServer
+import psycopg2
+
+VERSION = "{{ app_version }}"
+DSN = dict(host=os.environ["DB_HOST"], dbname=os.environ["DB_NAME"],
+           user=os.environ["DB_USER"], password=os.environ["DB_PASSWORD"])
+
+class Visits(BaseHTTPRequestHandler):
+    def do_GET(self):
+        with psycopg2.connect(**DSN) as db, db.cursor() as cur:
+            cur.execute("CREATE TABLE IF NOT EXISTS visits (host text)")
+            cur.execute("INSERT INTO visits VALUES (%s)", (socket.gethostname(),))
+            cur.execute("SELECT count(*) FROM visits")
+            total = cur.fetchone()[0]
+        body = f"{socket.gethostname()} v{VERSION}: visit {total}\n".encode()
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(body)
+
+HTTPServer(("127.0.0.1", 8000), Visits).serve_forever()

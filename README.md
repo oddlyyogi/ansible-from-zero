@@ -37,8 +37,8 @@ environment variables, and `cloud/teardown.yml` removes everything they create.
 | 6 | Roles and Collections | [chapters/06-roles-and-collections](chapters/06-roles-and-collections) |
 | 7 | Secrets with Ansible Vault | [chapters/07-secrets-with-ansible-vault](chapters/07-secrets-with-ansible-vault) |
 | 8 | Deploy the Full Stack | [chapters/08-deploy-the-full-stack](chapters/08-deploy-the-full-stack) |
-| 9 | Test Your Automation: ansible-lint and Molecule | coming soon |
-| 10 | Cloud Servers and PowerShell: AWS, Windows and pwsh | coming soon |
+| 9 | Test Your Automation: ansible-lint and Molecule | [chapters/09-test-your-automation](chapters/09-test-your-automation) |
+| 10 | Cloud Servers and PowerShell: AWS, Windows and pwsh | [chapters/10-cloud-servers-and-powershell](chapters/10-cloud-servers-and-powershell) |
 | 11 | Debug and Speed Up Playbooks | coming soon |
 | 12 | Execution Environments and CI | coming soon |
 

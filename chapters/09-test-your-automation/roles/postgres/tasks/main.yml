@@ -1,0 +1,44 @@
+# SPDX-License-Identifier: MIT-0
+---
+- name: Install PostgreSQL
+  ansible.builtin.apt:
+    name:
+      - postgresql
+      - python3-psycopg2
+      - acl
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+- name: Listen on the lab network
+  ansible.builtin.lineinfile:
+    path: "/etc/postgresql/{{ postgres_version }}/main/postgresql.conf"
+    regexp: "^#?listen_addresses"
+    line: "listen_addresses = '*'"
+  notify: Restart PostgreSQL
+- name: Allow the app from the lab network
+  community.postgresql.postgresql_pg_hba:
+    dest: "/etc/postgresql/{{ postgres_version }}/main/pg_hba.conf"
+    contype: host
+    users: "{{ db_user }}"
+    databases: "{{ db_name }}"
+    address: samenet
+    method: scram-sha-256
+  notify: Restart PostgreSQL
+- name: Keep PostgreSQL running
+  ansible.builtin.service:
+    name: postgresql
+    state: started
+    enabled: true
+- name: Create the app user
+  community.postgresql.postgresql_user:
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+  become: true
+  become_user: postgres
+  no_log: true
+- name: Create the app database
+  community.postgresql.postgresql_db:
+    name: "{{ db_name }}"
+    owner: "{{ db_user }}"
+  become: true
+  become_user: postgres

@@ -1,0 +1,35 @@
+---
+- name: Remove everything we launched
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    aws_region: us-east-2
+  tasks:
+    - name: Terminate the servers
+      amazon.aws.ec2_instance:
+        state: absent
+        filters:
+          tag:course: ansible-from-zero
+        region: "{{ aws_region }}"
+        wait: true
+    - name: Delete the security group
+      amazon.aws.ec2_security_group:
+        name: ansible-from-zero
+        state: absent
+        region: "{{ aws_region }}"
+    - name: Delete the key pair
+      amazon.aws.ec2_key:
+        name: ansible-from-zero
+        state: absent
+        region: "{{ aws_region }}"
+    - name: Look for servers still running
+      amazon.aws.ec2_instance_info:
+        filters:
+          tag:course: ansible-from-zero
+          instance-state-name: [pending, running, stopping, stopped]
+        region: "{{ aws_region }}"
+      register: left
+    - name: Nothing is left
+      ansible.builtin.assert:
+        that: left.instances | length == 0

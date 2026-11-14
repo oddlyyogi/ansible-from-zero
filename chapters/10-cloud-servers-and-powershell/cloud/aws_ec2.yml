@@ -1,0 +1,14 @@
+plugin: amazon.aws.aws_ec2
+regions:
+  - us-east-2
+filters:
+  tag:course: ansible-from-zero
+  instance-state-name: running
+use_deprecated_tags: false
+hostnames:
+  - tag:Name
+keyed_groups:
+  - key: ec2_tags.os
+    prefix: os
+compose:
+  ansible_host: public_ip_address

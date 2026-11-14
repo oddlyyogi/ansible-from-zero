@@ -1,0 +1,11 @@
+---
+- name: Run a PowerShell module on Linux
+  hosts: os_linux
+  gather_facts: false
+  tasks:
+    - name: Report the disk
+      disk_report:
+      register: report
+    - name: Show it
+      ansible.builtin.debug:
+        var: report

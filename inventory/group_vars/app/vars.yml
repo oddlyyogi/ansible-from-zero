@@ -1,3 +1,4 @@
+---
 motd: Application server
 db_name: appdb
 db_user: app
