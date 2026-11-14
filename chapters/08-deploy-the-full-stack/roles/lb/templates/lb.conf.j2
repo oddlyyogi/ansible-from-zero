@@ -1,0 +1,13 @@
+# {{ ansible_managed }}
+upstream web {
+    zone web 64k;
+{% for host in groups['webservers'] %}
+    server {{ host }}:80;
+{% endfor %}
+}
+server {
+    listen 80 default_server;
+    location / {
+        proxy_pass http://web;
+    }
+}

@@ -1,0 +1,11 @@
+http_port: 80
+color: from group webservers
+site_title: Ansible from zero
+extra_packages:
+  - curl
+  - jq
+  - tree
+site_dirs:
+  /srv/backups: "0750"
+  /srv/logs: "0755"
+  /srv/uploads: "0770"

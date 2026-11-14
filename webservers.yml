@@ -2,57 +2,14 @@
 - name: Set up the web servers
   hosts: webservers
   become: true
+  roles:
+    - nginx
+    - role: site
+      site_release: "1.2"
+    - geerlingguy.git
+    - app
   tasks:
-    - name: Install nginx
-      ansible.builtin.apt:
-        name: nginx
-        state: present
-        update_cache: true
-        cache_valid_time: 3600
-    - name: Show the nginx version
-      ansible.builtin.command: nginx -v
-      changed_when: false
-      register:
-        nginx_version: _task.result.stderr | split('/') | last
-    - name: Count the web servers
-      ansible.builtin.set_fact:
-        web_count: "{{ groups['webservers'] | length }}"
-    - name: Create the local facts folder
-      ansible.builtin.file:
-        path: /etc/ansible/facts.d
-        state: directory
-        mode: "0755"
-    - name: Record the site release as a local fact
-      ansible.builtin.copy:
-        content: '{"release": "1.1", "owner": "web team"}'
-        dest: /etc/ansible/facts.d/site.fact
-        mode: "0644"
-    - name: Reload local facts
-      ansible.builtin.setup:
-        filter: ansible_local
-    - name: Render the home page
-      ansible.builtin.template:
-        src: templates/index.html.j2
-        dest: /var/www/html/index.html
-        owner: www-data
-        mode: "0644"
-    - name: Allow more connections per worker
-      ansible.builtin.lineinfile:
-        path: /etc/nginx/nginx.conf
-        backup: true
-        regexp: '^\s*worker_connections'
-        line: "\tworker_connections 1024;"
-    - name: Configure the default site
-      ansible.builtin.template:
-        src: templates/site.conf.j2
-        dest: /etc/nginx/sites-available/default
-        mode: "0644"
-    - name: Keep nginx running
-      ansible.builtin.service:
-        name: nginx
-        state: started
-        enabled: true
-    - name: Create a backup folder
-      ansible.builtin.command:
-        cmd: mkdir /srv/backups
-        creates: /srv/backups
+    - name: Helper tools, when wanted
+      ansible.builtin.include_role:
+        name: tools
+      when: install_tools | default(true) | bool

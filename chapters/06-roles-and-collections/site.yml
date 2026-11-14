@@ -1,0 +1,5 @@
+---
+- name: Web servers
+  ansible.builtin.import_playbook: webservers.yml
+- name: Load balancers
+  ansible.builtin.import_playbook: loadbalancers.yml

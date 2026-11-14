@@ -21,18 +21,24 @@ ansible all -m ping
 The lab servers run systemd inside privileged containers, which a real server would not need. Windows is supported as
 a control node only through WSL.
 
+From chapter 6 on, install the Galaxy content with `ansible-galaxy install -r requirements.yml`. From chapter 7 on, the
+vaulted files use the lab password shown in the videos, `battery-staple-two`: put it in a `.vault_pass` file next to
+`ansible.cfg` (`printf 'battery-staple-two\n' > .vault_pass && chmod 600 .vault_pass`). It protects lab values only;
+use your own password for anything real. The cloud playbooks in `cloud/` (chapter 10) need your own AWS credentials in
+environment variables, and `cloud/teardown.yml` removes everything they create.
+
 | # | Chapter | Folder |
 |---|---------|--------|
 | 1 | Install Ansible and Run Your First Commands | [chapters/01-install-ansible-and-run-your-first-commands](chapters/01-install-ansible-and-run-your-first-commands) |
 | 2 | Inventories | [chapters/02-inventories](chapters/02-inventories) |
 | 3 | Your First Playbook | [chapters/03-your-first-playbook](chapters/03-your-first-playbook) |
 | 4 | Variables, Facts and Templates | [chapters/04-variables-facts-and-templates](chapters/04-variables-facts-and-templates) |
-| 5 | Conditionals, Loops, Handlers and Errors | coming soon |
-| 6 | Roles and Collections | coming soon |
-| 7 | Secrets with Ansible Vault | coming soon |
-| 8 | Deploy the Full Stack | coming soon |
+| 5 | Conditionals, Loops, Handlers and Errors | [chapters/05-conditionals-loops-handlers-and-errors](chapters/05-conditionals-loops-handlers-and-errors) |
+| 6 | Roles and Collections | [chapters/06-roles-and-collections](chapters/06-roles-and-collections) |
+| 7 | Secrets with Ansible Vault | [chapters/07-secrets-with-ansible-vault](chapters/07-secrets-with-ansible-vault) |
+| 8 | Deploy the Full Stack | [chapters/08-deploy-the-full-stack](chapters/08-deploy-the-full-stack) |
 | 9 | Test Your Automation: ansible-lint and Molecule | coming soon |
-| 10 | Cloud and PowerShell Hosts | coming soon |
+| 10 | Cloud Servers and PowerShell: AWS, Windows and pwsh | coming soon |
 | 11 | Debug and Speed Up Playbooks | coming soon |
 | 12 | Execution Environments and CI | coming soon |
 

@@ -1,0 +1,15 @@
+---
+- name: Check the web servers from the load balancer
+  hosts: loadbalancers
+  gather_facts: false
+  tasks:
+    - name: Web servers answer
+      ansible.builtin.uri:
+        url: "http://{{ item }}/"
+        return_content: true
+      register: page
+      until: page.status == 200
+      retries: 5
+      delay: 2
+      failed_when: "'Release' not in _task.result.content"
+      loop: "{{ groups['webservers'] }}"

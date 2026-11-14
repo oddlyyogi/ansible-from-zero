@@ -1,0 +1,7 @@
+#SPDX-License-Identifier: MIT-0
+---
+- name: Restart the app
+  ansible.builtin.systemd:
+    name: site-app
+    state: restarted
+    daemon_reload: true

@@ -1,0 +1,4 @@
+motd: Application server
+db_name: appdb
+db_user: app
+db_password: "{{ vault_db_password }}"

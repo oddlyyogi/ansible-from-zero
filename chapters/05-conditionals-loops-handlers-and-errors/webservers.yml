@@ -1,0 +1,137 @@
+---
+- name: Set up the web servers
+  hosts: webservers
+  become: true
+  tasks:
+    - name: Install nginx
+      ansible.builtin.apt:
+        name: nginx
+        state: present
+        update_cache: true
+        cache_valid_time: 3600
+      tags: packages
+    - name: Look for an old log rotation file
+      ansible.builtin.command: cat /etc/logrotate.d/oldsite
+      register: old_rotation
+      changed_when: false
+      failed_when:
+        - old_rotation.rc != 0
+        - "'No such file' not in old_rotation.stderr"
+    - name: Show the old log rotation file
+      ansible.builtin.debug:
+        var: old_rotation.stdout_lines
+      when: old_rotation.rc == 0
+    - name: Install helper tools
+      ansible.builtin.apt:
+        name: "{{ extra_packages }}"
+        state: present
+      when: ansible_facts['os_family'] == 'Debian'
+      tags: packages
+    - name: List the helper tools
+      ansible.builtin.debug:
+        msg: "{{ extra_packages | join(', ') }}"
+      when:
+        - show_tools | default(false) | bool
+        - extra_packages is defined
+    - name: Show the nginx version
+      ansible.builtin.command: nginx -v
+      changed_when: false
+      register:
+        nginx_version: _task.result.stderr | split('/') | last
+      tags: always
+    - name: Count the web servers
+      ansible.builtin.set_fact:
+        web_count: "{{ groups['webservers'] | length }}"
+      tags: always
+    - name: Create the local facts folder
+      ansible.builtin.file:
+        path: /etc/ansible/facts.d
+        state: directory
+        mode: "0755"
+    - name: Record the site release as a local fact
+      ansible.builtin.copy:
+        content: '{"release": "1.1", "owner": "web team"}'
+        dest: /etc/ansible/facts.d/site.fact
+        mode: "0644"
+    - name: Reload local facts
+      ansible.builtin.setup:
+        filter: ansible_local
+    - name: Render the home page
+      ansible.builtin.template:
+        src: templates/index.html.j2
+        dest: /var/www/html/index.html
+        owner: www-data
+        mode: "0644"
+      tags: content
+    - name: Allow more connections per worker
+      ansible.builtin.lineinfile:
+        path: /etc/nginx/nginx.conf
+        backup: true
+        regexp: '^\s*worker_connections'
+        line: "\tworker_connections 2048;"
+      notify: web config changed
+    - name: Keep a copy of the working site config
+      ansible.builtin.copy:
+        src: /etc/nginx/sites-available/default
+        dest: /etc/nginx/sites-available/default.good
+        remote_src: true
+        mode: "0644"
+    - name: Change the site config safely
+      tags: config
+      block:
+        - name: Configure the default site
+          ansible.builtin.template:
+            src: templates/site.conf.j2
+            dest: /etc/nginx/sites-available/default
+            mode: "0644"
+          notify: web config changed
+        - name: Test the nginx configuration
+          ansible.builtin.command: nginx -t
+          changed_when: false
+      rescue:
+        - name: Report the failure
+          ansible.builtin.debug:
+            msg: "{{ ansible_failed_task.name }} failed, restoring the last good config"
+        - name: Restore the last good config
+          ansible.builtin.copy:
+            src: /etc/nginx/sites-available/default.good
+            dest: /etc/nginx/sites-available/default
+            remote_src: true
+            mode: "0644"
+      always:
+        - name: Note that the config check ran
+          ansible.builtin.debug:
+            msg: Site config check finished
+    - name: Apply pending reloads now
+      ansible.builtin.meta: flush_handlers
+    - name: Check the frame header is live
+      ansible.builtin.uri:
+        url: http://localhost/
+      failed_when: _task.result.x_frame_options | default('') != 'DENY'
+    - name: Keep nginx running
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
+    - name: Create the site folders
+      ansible.builtin.file:
+        path: "{{ item.key }}"
+        state: directory
+        mode: "{{ item.value }}"
+      loop: "{{ site_dirs | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"
+      register: site_folders
+    - name: Dump the site folders
+      ansible.builtin.debug:
+        var: site_dirs
+      tags: [never, debug]
+    - name: Report new folders
+      ansible.builtin.debug:
+        msg: "{{ site_folders.results | selectattr('changed') | map(attribute='path') }}"
+  handlers:
+    - name: Reload nginx
+      ansible.builtin.service:
+        name: nginx
+        state: reloaded
+      listen: web config changed

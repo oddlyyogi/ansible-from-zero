@@ -1,0 +1,10 @@
+plugin: community.docker.docker_containers
+connection_type: docker-cli
+filters:
+  - include: >-
+      docker_config.Labels['com.docker.compose.project']
+      | default('') == 'ansible-from-zero'
+  - exclude: true
+keyed_groups:
+  - prefix: service
+    key: docker_config.Labels['com.docker.compose.service']

@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.retry
+lab/authorized_keys
+lab/known_hosts
+.vault_pass*
+*-artifact-*.json
+.DS_Store
+galaxy_roles/

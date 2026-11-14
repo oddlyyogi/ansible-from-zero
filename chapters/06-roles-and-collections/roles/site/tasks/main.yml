@@ -1,0 +1,59 @@
+#SPDX-License-Identifier: MIT-0
+---
+- name: Look for an old log rotation file
+  ansible.builtin.command: cat /etc/logrotate.d/oldsite
+  register: old_rotation
+  changed_when: false
+  failed_when:
+    - old_rotation.rc != 0
+    - "'No such file' not in old_rotation.stderr"
+- name: Show the old log rotation file
+  ansible.builtin.debug:
+    var: old_rotation.stdout_lines
+  when: old_rotation.rc == 0
+- name: Count the web servers
+  ansible.builtin.set_fact:
+    web_count: "{{ groups['webservers'] | length }}"
+  tags: always
+- name: Create the local facts folder
+  ansible.builtin.file:
+    path: /etc/ansible/facts.d
+    state: directory
+    mode: "0755"
+- name: Record the site release as a local fact
+  ansible.builtin.copy:
+    content: '{"release": "{{ site_release }}", "owner": "web team"}'
+    dest: /etc/ansible/facts.d/site.fact
+    mode: "0644"
+- name: Reload local facts
+  ansible.builtin.setup:
+    filter: ansible_local
+- name: Render the home page
+  ansible.builtin.template:
+    src: index.html.j2
+    dest: /var/www/html/index.html
+    owner: www-data
+    mode: "0644"
+  tags: content
+- name: Apply pending reloads now
+  ansible.builtin.meta: flush_handlers
+- name: Check the frame header is live
+  ansible.builtin.uri:
+    url: http://localhost/
+  failed_when: _task.result.x_frame_options | default('') != 'DENY'
+- name: Create the site folders
+  ansible.builtin.file:
+    path: "{{ item.key }}"
+    state: directory
+    mode: "{{ item.value }}"
+  loop: "{{ site_dirs | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+  register: site_folders
+- name: Dump the site folders
+  ansible.builtin.debug:
+    var: site_dirs
+  tags: [never, debug]
+- name: Report new folders
+  ansible.builtin.debug:
+    msg: "{{ site_folders.results | selectattr('changed') | map(attribute='path') }}"
