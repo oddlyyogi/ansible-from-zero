@@ -1,0 +1,35 @@
+---
+- name: Set up the web servers
+  hosts: webservers
+  become: true
+  tasks:
+    - name: Install nginx
+      ansible.builtin.apt:
+        name: nginx
+        state: present
+        update_cache: true
+        cache_valid_time: 3600
+    - name: Copy the home page
+      ansible.builtin.copy:
+        src: files/index.html
+        dest: /var/www/html/index.html
+        owner: www-data
+        mode: "0644"
+    - name: Allow more connections per worker
+      ansible.builtin.lineinfile:
+        path: /etc/nginx/nginx.conf
+        backup: true
+        regexp: '^\s*worker_connections'
+        line: "\tworker_connections 1024;"
+    - name: Keep nginx running
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
+    - name: Show the nginx version
+      ansible.builtin.command: nginx -v
+      changed_when: false
+    - name: Create a backup folder
+      ansible.builtin.command:
+        cmd: mkdir /srv/backups
+        creates: /srv/backups

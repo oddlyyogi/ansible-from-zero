@@ -24,9 +24,9 @@ a control node only through WSL.
 | # | Chapter | Folder |
 |---|---------|--------|
 | 1 | Install Ansible and Run Your First Commands | [chapters/01-install-ansible-and-run-your-first-commands](chapters/01-install-ansible-and-run-your-first-commands) |
-| 2 | Inventories | coming soon |
-| 3 | Your First Playbook | coming soon |
-| 4 | Variables, Facts and Templates | coming soon |
+| 2 | Inventories | [chapters/02-inventories](chapters/02-inventories) |
+| 3 | Your First Playbook | [chapters/03-your-first-playbook](chapters/03-your-first-playbook) |
+| 4 | Variables, Facts and Templates | [chapters/04-variables-facts-and-templates](chapters/04-variables-facts-and-templates) |
 | 5 | Conditionals, Loops, Handlers and Errors | coming soon |
 | 6 | Roles and Collections | coming soon |
 | 7 | Secrets with Ansible Vault | coming soon |

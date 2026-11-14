@@ -1,0 +1,3 @@
+http_port: 80
+color: from group webservers
+site_title: Ansible from zero

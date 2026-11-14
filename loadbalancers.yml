@@ -1,0 +1,13 @@
+---
+- name: Check the web servers from the load balancer
+  hosts: loadbalancers
+  gather_facts: false
+  tasks:
+    - name: Web1 answers
+      ansible.builtin.uri:
+        url: http://web1/
+        status_code: 200
+    - name: Web2 answers
+      ansible.builtin.uri:
+        url: http://web2/
+        status_code: 200

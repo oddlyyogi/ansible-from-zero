@@ -1,0 +1,16 @@
+<!doctype html>
+<title>{{ site_title }}</title>
+<h1>{{ site_title }}</h1>
+<p>Served by {{ inventory_hostname }}
+   on {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }}</p>
+<p>{{ motd }}</p>
+<h2>Web servers in this site</h2>
+<ul>
+{% for host in groups['webservers'] %}
+  <li>{{ host }}{% if host == inventory_hostname %} (this one){% endif %}</li>
+{% endfor %}
+</ul>
+<p>Database: {{ groups['dbservers'] | join(', ') }}</p>
+<p>nginx {{ nginx_version }}</p>
+<p>{{ web_count }} web servers</p>
+<p>Release {{ ansible_local.site.release | default('unknown') }}</p>
