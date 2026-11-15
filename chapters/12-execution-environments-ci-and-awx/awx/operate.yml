@@ -1,0 +1,39 @@
+---
+- name: Day-two work in AWX
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    awx_secret: kubectl -n awx get secret awx-admin-password -o jsonpath={.data.password}
+  module_defaults:
+    group/awx.awx.controller:
+      controller_host: http://127.0.0.1:30080
+      controller_username: admin
+      controller_password: "{{ lookup('ansible.builtin.pipe', awx_secret + ' | base64 -d') }}"
+  tasks:
+    - name: Run the disk check with a stricter limit
+      awx.awx.job_launch:
+        job_template: Disk check
+        extra_vars:
+          disk_limit_pct: 10
+        wait: true
+      register: strict
+      failed_when: false
+    - name: Show how it ended
+      ansible.builtin.debug:
+        msg: "Job {{ strict.id }} finished with status {{ strict.status }}"
+    - name: Schedule the check every night
+      awx.awx.schedule:
+        name: Nightly disk check
+        unified_job_template: Disk check
+        rrule: "DTSTART:20261116T020000Z RRULE:FREQ=DAILY;INTERVAL=1"
+    - name: Create a user for the on-call team
+      awx.awx.user:
+        username: oncall
+        password: "{{ lookup('ansible.builtin.password', '/dev/null', length=24) }}"
+      no_log: true
+    - name: Let that user run the disk check, and nothing else
+      awx.awx.role:
+        user: oncall
+        role: execute
+        job_templates: [Disk check]

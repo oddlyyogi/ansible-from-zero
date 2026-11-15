@@ -1,0 +1,13 @@
+---
+- name: Limits on single tasks
+  hosts: webservers
+  gather_facts: false
+  tasks:
+    - name: One host at a time
+      ansible.builtin.command: sleep 2
+      changed_when: false
+      throttle: 1
+    - name: Once for the whole play
+      ansible.builtin.debug:
+        msg: "Running on {{ inventory_hostname }} for {{ ansible_play_hosts | length }} hosts"
+      run_once: true

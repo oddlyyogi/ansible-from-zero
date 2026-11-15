@@ -10,5 +10,11 @@ hostnames:
 keyed_groups:
   - key: ec2_tags.os
     prefix: os
+  - key: instance_type
+    prefix: type
 compose:
   ansible_host: public_ip_address
+cache: true
+cache_plugin: ansible.builtin.jsonfile
+cache_connection: ~/.cache/ansible_aws_ec2
+cache_timeout: 300

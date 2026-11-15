@@ -79,6 +79,7 @@
         inventory: Lab
         credentials: [Lab SSH key, Lab vault password]
         execution_environment: ansible-from-zero EE
+        ask_variables_on_launch: true
     - name: Run it
       awx.awx.job_launch:
         job_template: Disk check

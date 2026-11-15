@@ -6,3 +6,6 @@ exclude_paths:
   - context/
 warn_list:
   - var-naming[no-role-prefix]
+  - role-argument-spec
+enable_list:
+  - role-argument-spec

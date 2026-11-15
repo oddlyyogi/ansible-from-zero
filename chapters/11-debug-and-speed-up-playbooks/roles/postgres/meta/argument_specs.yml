@@ -1,0 +1,9 @@
+---
+argument_specs:
+  main:
+    short_description: Install PostgreSQL and create the app database
+    options:
+      postgres_version:
+        type: str
+        default: "17"
+        description: The PostgreSQL major version, used in the configuration paths.

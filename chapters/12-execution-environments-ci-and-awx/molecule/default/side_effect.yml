@@ -1,0 +1,10 @@
+---
+- name: Side effect
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Stop nginx, as a crash would
+      ansible.builtin.service:
+        name: nginx
+        state: stopped
