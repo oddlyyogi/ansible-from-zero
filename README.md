@@ -40,7 +40,7 @@ environment variables, and `cloud/teardown.yml` removes everything they create.
 | 9 | Test Your Automation: ansible-lint and Molecule | [chapters/09-test-your-automation](chapters/09-test-your-automation) |
 | 10 | Cloud Servers and PowerShell: AWS, Windows and pwsh | [chapters/10-cloud-servers-and-powershell](chapters/10-cloud-servers-and-powershell) |
 | 11 | Debug and Speed Up Playbooks | [chapters/11-debug-and-speed-up-playbooks](chapters/11-debug-and-speed-up-playbooks) |
-| 12 | Execution Environments and CI | [chapters/12-execution-environments-and-ci](chapters/12-execution-environments-and-ci) |
+| 12 | Execution Environments, CI and AWX | [chapters/12-execution-environments-ci-and-awx](chapters/12-execution-environments-ci-and-awx) |
 
 ## Versions
 
