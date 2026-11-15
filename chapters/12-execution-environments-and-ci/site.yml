@@ -1,0 +1,9 @@
+---
+- name: Database servers
+  ansible.builtin.import_playbook: dbservers.yml
+- name: Load balancers
+  ansible.builtin.import_playbook: loadbalancers.yml
+- name: Web servers
+  ansible.builtin.import_playbook: webservers.yml
+- name: Checks
+  ansible.builtin.import_playbook: checks.yml

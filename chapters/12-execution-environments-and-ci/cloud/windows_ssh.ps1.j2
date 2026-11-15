@@ -1,0 +1,19 @@
+<powershell>
+Start-Transcript -Path C:\ProgramData\user-data.log
+if (-not (Get-Service -Name sshd -ErrorAction SilentlyContinue)) {
+    Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+}
+Set-Service -Name sshd -StartupType Automatic
+Start-Service -Name sshd
+$rule = @{
+    Name = 'ssh-in'; DisplayName = 'SSH in'; Protocol = 'TCP'
+    LocalPort = 22; Direction = 'Inbound'; Action = 'Allow'
+}
+New-NetFirewallRule @rule
+$keys = 'C:\ProgramData\ssh\administrators_authorized_keys'
+Set-Content -Path $keys -Value '{{ lookup('ansible.builtin.file', '~/.ssh/ansible_lab.pub') }}'
+icacls.exe $keys /inheritance:r /grant 'Administrators:F' /grant 'SYSTEM:F'
+$ps = 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
+New-ItemProperty -Path HKLM:\SOFTWARE\OpenSSH -Name DefaultShell -Value $ps -Force
+Stop-Transcript
+</powershell>

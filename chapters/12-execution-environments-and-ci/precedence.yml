@@ -1,0 +1,14 @@
+---
+- name: Which color wins
+  hosts: web1
+  gather_facts: false
+  vars:
+    color: from play vars
+  vars_files:
+    - vars/colors.yml
+  tasks:
+    - name: Show the color
+      ansible.builtin.debug:
+        var: color
+      vars:
+        color: from task vars

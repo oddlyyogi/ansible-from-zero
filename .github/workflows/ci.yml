@@ -20,21 +20,22 @@ jobs:
         run: |
           docker compose up -d --build
           for p in 2221 2222 2223 2224; do
-            for i in $(seq 90); do ssh-keyscan -p $p 127.0.0.1 2>/dev/null | grep -q ssh-ed25519 && break; sleep 1; done
+            until ssh-keyscan -p $p 127.0.0.1 2>/dev/null | grep -q ed25519; do
+              sleep 1
+            done
           done
-      - name: Roles and collections from Galaxy (if the chapter has them)
-        run: if [ -f requirements.yml ]; then ansible-galaxy install -r requirements.yml; fi
-      - name: The lab's Vault password, the one shown in the videos (if the chapter uses Vault)
-        run: |
-          if grep -q vault_password_file ansible.cfg; then
-            printf 'battery-staple-two\n' > .vault_pass && chmod 600 .vault_pass
-          fi
+      - name: Roles and collections from Galaxy
+        run: ansible-galaxy install -r requirements.yml
+      - name: The lab's Vault password
+        run: printf 'battery-staple-two\n' > .vault_pass && chmod 600 .vault_pass
       - name: Ping every server
         run: ansible all -m ping
-      - name: Run the playbook (if the chapter has one)
+      - name: Deploy twice; the second run must change nothing
         run: |
-          if [ -f site.yml ]; then ansible-playbook site.yml; ansible-playbook site.yml | tee second.txt; grep -q 'changed=0' second.txt; fi
-      - name: Lint (if the chapter configures ansible-lint)
-        run: if [ -f .ansible-lint ]; then ansible-lint; fi
-      - name: Molecule (if the chapter has a scenario)
-        run: if [ -d molecule/default ]; then molecule test; fi
+          ansible-playbook site.yml
+          ansible-playbook site.yml | tee second.txt
+          grep -q 'changed=0' second.txt
+      - name: Lint
+        run: ansible-lint
+      - name: Molecule
+        run: molecule test

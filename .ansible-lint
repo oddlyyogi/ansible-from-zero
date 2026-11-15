@@ -3,5 +3,6 @@ profile: production
 exclude_paths:
   - chapters/
   - galaxy_roles/
+  - context/
 warn_list:
   - var-naming[no-role-prefix]

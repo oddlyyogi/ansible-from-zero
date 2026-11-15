@@ -1,0 +1,33 @@
+---
+version: 3
+
+images:
+  base_image:
+    name: registry.fedoraproject.org/fedora:44
+
+dependencies:
+  python_interpreter:
+    package_system: python3
+    python_path: /usr/bin/python3
+  ansible_core:
+    package_pip: ansible-core==2.21.6
+  ansible_runner:
+    package_pip: ansible-runner==2.4.3
+  galaxy:
+    collections:
+      - name: ansible.posix
+        version: 2.2.2
+      - name: community.postgresql
+        version: 4.2.0
+    roles:
+      - name: geerlingguy.git
+        version: 3.0.1
+  system:
+    - openssh-clients [platform:rpm]
+
+options:
+  package_manager_path: /usr/bin/dnf
+
+additional_build_steps:
+  prepend_base:
+    - RUN /usr/bin/dnf install -y python3-pip && /usr/bin/dnf clean all

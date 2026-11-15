@@ -1,0 +1,26 @@
+---
+- name: Web server in the cloud
+  hosts: os_linux
+  become: true
+  roles:
+    - nginx
+  tasks:
+    - name: Put a page in place
+      ansible.builtin.copy:
+        dest: /var/www/html/index.html
+        content: "Hello from {{ inventory_hostname }} in {{ placement.region }}\n"
+        mode: "0644"
+
+- name: Check it from the control node
+  hosts: os_linux
+  gather_facts: false
+  tasks:
+    - name: Ask for the page over the internet
+      ansible.builtin.uri:
+        url: "http://{{ ansible_host }}/"
+        return_content: true
+      delegate_to: localhost
+      register: page
+    - name: Show the answer
+      ansible.builtin.debug:
+        msg: "{{ page.content | trim }}"

@@ -1,0 +1,89 @@
+---
+- name: Configure AWX for our project
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    awx_secret: kubectl -n awx get secret awx-admin-password -o jsonpath={.data.password}
+  module_defaults:
+    group/awx.awx.controller:
+      controller_host: http://127.0.0.1:30080
+      controller_username: admin
+      controller_password: "{{ lookup('ansible.builtin.pipe', awx_secret + ' | base64 -d') }}"
+  tasks:
+    - name: Register our execution environment
+      awx.awx.execution_environment:
+        name: ansible-from-zero EE
+        image: afz-ee:1.0
+        pull: never
+    - name: Store the lab's SSH key
+      awx.awx.credential:
+        name: Lab SSH key
+        organization: Default
+        credential_type: Machine
+        inputs:
+          username: ansible
+          ssh_key_data: "{{ lookup('ansible.builtin.file', '~/.ssh/ansible_lab') }}"
+      no_log: true
+    - name: Define a credential type for the vault password
+      awx.awx.credential_type:
+        name: Lab vault password type
+        kind: cloud
+        inputs:
+          fields:
+            - id: password
+              type: string
+              label: Vault password
+              secret: true
+        injectors:
+          env:
+            LAB_VAULT_PASSWORD: !unsafe "{{ password }}"
+    - name: Store the vault password
+      awx.awx.credential:
+        name: Lab vault password
+        organization: Default
+        credential_type: Lab vault password type
+        inputs:
+          password: "{{ lookup('ansible.builtin.file', '../.vault_pass') }}"
+      no_log: true
+    - name: Point a project at our Git repository
+      awx.awx.project:
+        name: ansible-from-zero
+        organization: Default
+        scm_type: git
+        scm_url: https://github.com/oddlyyogi/ansible-from-zero
+        scm_branch: main
+        scm_update_on_launch: true
+        wait: true
+    - name: Create the lab inventory
+      awx.awx.inventory:
+        name: Lab
+        organization: Default
+    - name: Add the web servers
+      awx.awx.host:
+        name: "{{ item }}"
+        inventory: Lab
+        variables:
+          ansible_port: 22
+      loop: [web1, web2]
+    - name: Group them
+      awx.awx.group:
+        name: webservers
+        inventory: Lab
+        hosts: [web1, web2]
+    - name: Create the disk check template
+      awx.awx.job_template:
+        name: Disk check
+        project: ansible-from-zero
+        playbook: maintenance.yml
+        inventory: Lab
+        credentials: [Lab SSH key, Lab vault password]
+        execution_environment: ansible-from-zero EE
+    - name: Run it
+      awx.awx.job_launch:
+        job_template: Disk check
+        wait: true
+      register: job
+    - name: Show the result
+      ansible.builtin.debug:
+        msg: "Job {{ job.id }} finished with status {{ job.status }}"

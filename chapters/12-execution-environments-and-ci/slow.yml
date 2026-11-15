@@ -1,0 +1,14 @@
+---
+- name: Three steps, one slow server
+  hosts: webservers
+  gather_facts: false
+  tasks:
+    - name: Step one
+      ansible.builtin.command: "sleep {{ 1 if inventory_hostname == 'web1' else 4 }}"
+      changed_when: false
+    - name: Step two
+      ansible.builtin.command: "sleep {{ 1 if inventory_hostname == 'web1' else 4 }}"
+      changed_when: false
+    - name: Step three
+      ansible.builtin.command: "sleep {{ 1 if inventory_hostname == 'web1' else 4 }}"
+      changed_when: false

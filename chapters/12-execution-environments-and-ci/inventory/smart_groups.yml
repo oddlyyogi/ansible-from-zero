@@ -1,0 +1,9 @@
+---
+plugin: ansible.builtin.constructed
+strict: false
+use_vars_plugins: true
+groups:
+  careful: "'ask before' in motd"
+keyed_groups:
+  - key: http_port | string
+    prefix: port

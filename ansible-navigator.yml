@@ -1,0 +1,21 @@
+---
+ansible-navigator:
+  execution-environment:
+    enabled: true
+    image: afz-ee:1.0
+    pull:
+      policy: never
+    container-engine: docker
+    container-options:
+      - --network=host
+    volume-mounts:
+      - src: ${HOME}/.ssh
+        dest: /runner/.ssh
+        options: ro
+    environment-variables:
+      set:
+        ANSIBLE_SSH_CONTROL_PATH_DIR: /tmp/ansible-cp
+  mode: stdout
+  playbook-artifact:
+    enable: true
+    save-as: "artifacts/{playbook_name}-artifact-{time_stamp}.json"

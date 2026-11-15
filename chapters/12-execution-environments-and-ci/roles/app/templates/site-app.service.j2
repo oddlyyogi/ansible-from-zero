@@ -1,0 +1,12 @@
+[Unit]
+Description=Visits app {{ app_version }}
+After=network.target
+
+[Service]
+EnvironmentFile=/etc/site/db.env
+ExecStart=/usr/bin/python3 /opt/site/app.py
+DynamicUser=yes
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

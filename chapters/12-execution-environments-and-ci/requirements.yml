@@ -1,0 +1,9 @@
+---
+collections:
+  - name: awx.awx
+    version: 24.6.1
+  - name: community.postgresql
+    version: ">=4.2.0"
+roles:
+  - name: geerlingguy.git
+    version: 3.0.1

@@ -1,0 +1,59 @@
+# SPDX-License-Identifier: MIT-0
+---
+- name: Install nginx
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  tags: packages
+- name: Show the nginx version
+  ansible.builtin.command: nginx -v
+  changed_when: false
+  register:
+    nginx_version: _task.result.stderr | split('/') | last
+  tags: always
+- name: Allow more connections per worker
+  ansible.builtin.lineinfile:
+    path: /etc/nginx/nginx.conf
+    backup: true
+    regexp: "^\\s*worker_connections"
+    line: "\tworker_connections {{ nginx_worker_connections }};"
+  notify: web config changed
+- name: Change the site config safely
+  tags: config
+  block:
+    - name: Configure the default site
+      ansible.builtin.template:
+        src: site.conf.j2
+        dest: /etc/nginx/sites-available/default
+        mode: "0644"
+      notify: web config changed
+    - name: Test the nginx configuration
+      ansible.builtin.command: nginx -t
+      changed_when: false
+    - name: Save the working site config
+      ansible.builtin.copy:
+        src: /etc/nginx/sites-available/default
+        dest: /etc/nginx/sites-available/default.good
+        remote_src: true
+        mode: "0644"
+  rescue:
+    - name: Report the failure
+      ansible.builtin.debug:
+        msg: "{{ ansible_failed_task.name }} failed, restoring the last good config"
+    - name: Restore the last good config
+      ansible.builtin.copy:
+        src: /etc/nginx/sites-available/default.good
+        dest: /etc/nginx/sites-available/default
+        remote_src: true
+        mode: "0644"
+  always:
+    - name: Note that the config check ran
+      ansible.builtin.debug:
+        msg: Site config check finished
+- name: Keep nginx running
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: true
