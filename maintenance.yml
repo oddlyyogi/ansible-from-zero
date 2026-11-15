@@ -21,4 +21,3 @@
         that: used_pct < disk_limit_pct
         fail_msg: "/ is {{ used_pct }} percent full, over {{ disk_limit_pct }}"
         success_msg: "/ is {{ used_pct }} percent full"
-      debugger: on_failed
